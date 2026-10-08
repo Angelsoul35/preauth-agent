@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from preauth.agent import PreAuthAgent
-from preauth.llm.fake import FakeLLM
+from preauth.llm.fake import FailingLLM, FakeLLM
 from preauth.main import app
 from preauth.schema import PriorAuthRequest
 from preauth.service import PreAuthService
@@ -55,6 +55,16 @@ def test_agent_uses_llm_rationale_when_provided():
     agent = PreAuthAgent(llm=FakeLLM("LLM-written rationale."))
     packet = agent.run(PriorAuthRequest(**APPROVE), "r6")
     assert packet.rationale == "LLM-written rationale."
+
+
+def test_agent_falls_back_to_template_rationale_when_llm_raises():
+    # A configured LLM that throws must not fail the request: the agent falls back
+    # to the deterministic template rationale (built from the same tool findings).
+    agent = PreAuthAgent(llm=FailingLLM())
+    packet = agent.run(PriorAuthRequest(**APPROVE), "r-fallback")
+    assert packet.recommendation == "approve"
+    assert packet.rationale.startswith("Recommendation: APPROVE.")
+    assert "A human reviewer must confirm this recommendation." in packet.rationale
 
 
 def test_service_approval_flow():

@@ -85,7 +85,7 @@ class PreAuthAgent:
         if self.rationale_mode == "llm" or self._llm is not None:
             try:
                 return self._llm_rationale(request, results, recommendation)
-            except Exception:  # pragma: no cover - falls back when no provider
+            except Exception:  # a configured provider failed; fall back to the template
                 pass
         return self._template_rationale(results, recommendation, missing)
 
