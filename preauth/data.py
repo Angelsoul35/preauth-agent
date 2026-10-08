@@ -40,8 +40,12 @@ CRITERIA: dict[str, dict] = {
         "diagnoses": ["E66.01", "E66.2"],
         "rules": [
             ("bmi", ">=", 40.0, "BMI at least 40"),
-            ("months_conservative_treatment", ">=", 6.0,
-             "at least 6 months of documented conservative treatment"),
+            (
+                "months_conservative_treatment",
+                ">=",
+                6.0,
+                "at least 6 months of documented conservative treatment",
+            ),
         ],
     },
     "MRI001": {
@@ -59,22 +63,30 @@ CRITERIA: dict[str, dict] = {
 
 SAMPLE_REQUESTS: list[dict] = [
     {  # clean approve
-        "member_id": "M1001", "procedure_code": "BAR001", "diagnosis_code": "E66.01",
+        "member_id": "M1001",
+        "procedure_code": "BAR001",
+        "diagnosis_code": "E66.01",
         "clinical_data": {"bmi": 42.0, "months_conservative_treatment": 8},
         "submitted_documents": ["bmi_report", "nutrition_evaluation", "psych_evaluation"],
     },
     {  # pend: missing a document
-        "member_id": "M1001", "procedure_code": "BAR001", "diagnosis_code": "E66.01",
+        "member_id": "M1001",
+        "procedure_code": "BAR001",
+        "diagnosis_code": "E66.01",
         "clinical_data": {"bmi": 41.0, "months_conservative_treatment": 7},
         "submitted_documents": ["bmi_report", "nutrition_evaluation"],
     },
     {  # deny: criteria not met (BMI too low)
-        "member_id": "M1001", "procedure_code": "BAR001", "diagnosis_code": "E66.01",
+        "member_id": "M1001",
+        "procedure_code": "BAR001",
+        "diagnosis_code": "E66.01",
         "clinical_data": {"bmi": 34.0, "months_conservative_treatment": 8},
         "submitted_documents": ["bmi_report", "nutrition_evaluation", "psych_evaluation"],
     },
     {  # deny: procedure not covered by the basic plan
-        "member_id": "M1002", "procedure_code": "BAR001", "diagnosis_code": "E66.01",
+        "member_id": "M1002",
+        "procedure_code": "BAR001",
+        "diagnosis_code": "E66.01",
         "clinical_data": {"bmi": 45.0, "months_conservative_treatment": 12},
         "submitted_documents": ["bmi_report", "nutrition_evaluation", "psych_evaluation"],
     },

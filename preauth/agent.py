@@ -23,8 +23,12 @@ from .tools import (
 
 
 class PreAuthAgent:
-    def __init__(self, rationale_mode: str = "template", llm: LLMClient | None = None,
-                 provider_spec: str | None = None) -> None:
+    def __init__(
+        self,
+        rationale_mode: str = "template",
+        llm: LLMClient | None = None,
+        provider_spec: str | None = None,
+    ) -> None:
         self.rationale_mode = rationale_mode
         self._llm = llm
         self._provider_spec = provider_spec

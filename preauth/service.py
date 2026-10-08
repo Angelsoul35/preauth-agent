@@ -37,9 +37,7 @@ class PreAuthService:
         if packet is None:
             return None
         if packet.status != "pending_human_approval":
-            raise ValueError(
-                f"request {request_id} is '{packet.status}', not awaiting approval"
-            )
+            raise ValueError(f"request {request_id} is '{packet.status}', not awaiting approval")
         if decision not in {"approved", "denied"}:
             raise ValueError("decision must be 'approved' or 'denied'")
         packet.human_decision = HumanDecision(decision=decision, reviewer=reviewer, note=note)

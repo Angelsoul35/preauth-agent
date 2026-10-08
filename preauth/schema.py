@@ -31,9 +31,7 @@ class PriorAuthRequest(BaseModel):
                 "procedure_code": "BAR001",
                 "diagnosis_code": "E66.01",
                 "clinical_data": {"bmi": 42.0, "months_conservative_treatment": 8},
-                "submitted_documents": [
-                    "bmi_report", "nutrition_evaluation", "psych_evaluation"
-                ],
+                "submitted_documents": ["bmi_report", "nutrition_evaluation", "psych_evaluation"],
             }
         }
     }

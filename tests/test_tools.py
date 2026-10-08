@@ -52,8 +52,11 @@ def test_clinical_criteria_failed():
 
 def test_registry_lists_all_tools():
     assert set(TOOLS) == {
-        "check_eligibility", "check_coverage", "required_documents",
-        "check_documents", "check_clinical_criteria",
+        "check_eligibility",
+        "check_coverage",
+        "required_documents",
+        "check_documents",
+        "check_clinical_criteria",
     }
     for spec in TOOLS.values():
         assert callable(spec["func"])

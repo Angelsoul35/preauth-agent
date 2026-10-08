@@ -21,9 +21,7 @@ _OPS = {
 }
 
 
-def check_clinical_criteria(
-    procedure_code: str, diagnosis_code: str, clinical_data: dict
-) -> dict:
+def check_clinical_criteria(procedure_code: str, diagnosis_code: str, clinical_data: dict) -> dict:
     """Return whether the clinical criteria are met, and which ones failed."""
     criteria = CRITERIA.get(procedure_code)
     if criteria is None:
