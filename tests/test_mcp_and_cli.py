@@ -12,10 +12,19 @@ def test_cli_demo_runs(capsys):
     assert "final status" in out
 
 
-def test_mcp_server_builds():
-    mcp = pytest.importorskip("mcp")  # optional extra
-    assert mcp is not None
+def test_mcp_server_registers_all_preauth_tools():
+    pytest.importorskip("mcp")  # optional extra
+    import asyncio
+
     from preauth.mcp_server import build_server
 
-    server = build_server()
-    assert server is not None
+    tools = asyncio.run(build_server().list_tools())
+    names = {tool.name for tool in tools}
+    # Every pre-auth tool the agent uses must be exposed over MCP — no more, no less.
+    assert names == {
+        "eligibility",
+        "coverage",
+        "documents_required",
+        "documents_missing",
+        "clinical",
+    }
