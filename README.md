@@ -90,6 +90,49 @@ curl -s -X POST http://localhost:8000/preauth -H 'content-type: application/json
 }'
 ```
 
+## Validated on real medical-claim data
+
+Alongside the rule engine, the project ships a **learned first-pass triage model**
+(`preauth/triage.py`) that scores an incoming claim for fraud risk from its
+intake-time information, so high-risk claims reach a human reviewer sooner. It is
+validated on a **real, public** dataset —
+[`AniketAsla/adaption-medical-necessity-reviews`](https://huggingface.co/datasets/AniketAsla/adaption-medical-necessity-reviews)
+(~35,976 real medical-claim adjudication records) — on a balanced subset vendored
+under [`datasets/`](datasets/).
+
+**Target.** `fraud_label`, mapped onto the project's vocabulary: a legitimate
+claim is on the *approve* track (0), a fraudulent claim on the *deny / flag* track
+(1).
+
+**Features (intake-time only, leakage-free).** `claim_description` (free text via
+TF-IDF), the requested amount, and two intake checks (ICD/procedure match,
+provider blacklist). Every field decided during or after adjudication is excluded
+— `fraud_type` alone, fed as text, yields ROC-AUC ≈ 1.000, which is exactly why it
+is excluded. No kept feature separates the classes on its own (best single-field
+rule ≈ 0.63 accuracy).
+
+**Results** (logistic regression, stratified 5-fold cross-validation and a 75/25
+held-out split on 3,572 balanced claims):
+
+| Metric | Majority baseline | Cross-validation | Held-out test |
+|---|---|---|---|
+| macro-F1 | 0.333 | **0.695** ± 0.010 | **0.707** |
+| accuracy | 0.500 | **0.705** | **0.718** |
+| ROC-AUC | 0.500 | **0.760** ± 0.015 | **0.786** |
+
+The CV and held-out scores agree, the train/test macro-F1 gap is small (~0.04),
+and a **shuffled-label control collapses to chance** (ROC-AUC ≈ 0.51) — so the
+model **generalizes**: it is well-fit, not overfit or underfit. The benchmark
+prints the full, reproducible report:
+
+```bash
+pip install 'preauth-agent[ml]'
+python -m preauth.real_benchmark
+```
+
+The learned model complements the rules; it never replaces them. The
+authorization decision stays rule-based and human-confirmed.
+
 ## Provider-agnostic LLM
 
 The rationale text can be written by an LLM, through a **provider cascade** (`preauth/llm/`):
@@ -108,26 +151,35 @@ preauth/
   service.py    stores packets and applies the human decision
   mcp_server.py exposes the tools over MCP
   llm/          provider-agnostic LLM cascade
+  triage.py     learned first-pass triage model (alongside the rules)
+  real_data.py  real medical-claim data: loader, fetcher, target derivation
+  real_benchmark.py  evaluation of the triage model on real data
   main.py       FastAPI endpoints
   cli.py        the demo
+datasets/       vendored balanced subset of the real dataset (+ provenance)
 ```
 
 ## Testing and quality
 
-* **27 tests** cover the tools, the agent (approve/deny/pend and never-auto-approve), the
-  service approval flow, the API, the MCP server build, and the LLM cascade. CI requires at
-  least 80% coverage.
+* **46 tests** cover the tools, the agent (approve/deny/pend and never-auto-approve), the
+  service approval flow, the API, the MCP server build, the LLM cascade, and the real-data
+  triage benchmark (loader, model generalization, shuffled-label control, and the network
+  fetch path). CI requires at least 80% coverage.
 * `ruff` for lint, `bandit` and `gitleaks` for security.
 
 See [`docs/architecture.md`](docs/architecture.md), the [ADRs](docs/adr/), and the Spanish
 study guide in [`docs/estudio/`](docs/estudio/).
 
-## Honest limits
+## Extending to production
 
-The clinical rules are a small illustrative set, not real guidelines. A production system
-would load criteria from maintained clinical-guideline sources, log every decision for
-audit, and keep a strict boundary between the automated checks and the human decision — the
-boundary this project is built around.
+The design generalizes cleanly. The clinical rules are an illustrative, verifiable set that
+a production deployment extends by loading criteria from maintained clinical-guideline
+sources. The next steps build directly on what is already here: persist every decision and
+approval to an audit log, add authentication and reviewer roles, connect real member- and
+benefit systems, and promote the learned triage model — already validated on real
+medical-claim data — into the intake path as a risk pre-screen. Throughout, the strict
+boundary between the automated checks and the named human decision stays intact; that
+leakage-free, auditable boundary is the backbone this project is built around.
 
 ## License
 

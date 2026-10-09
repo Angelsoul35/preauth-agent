@@ -1,4 +1,4 @@
-.PHONY: install test lint run mcp demo clean
+.PHONY: install test lint run mcp demo benchmark clean
 
 install:
 	pip install -e ".[dev,mcp]"
@@ -17,6 +17,9 @@ mcp:            ## Run the MCP server (stdio) exposing the tools
 
 demo:
 	python -m preauth.cli demo
+
+benchmark:      ## Evaluate the learned triage model on real medical-claim data
+	python -m preauth.real_benchmark
 
 clean:
 	rm -rf .pytest_cache .ruff_cache .coverage htmlcov
